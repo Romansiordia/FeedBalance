@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { v4 as uuidv4 } from 'uuid';
@@ -21,9 +21,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { ScrollArea } from '../components/ui/scroll-area';
 
 import { PlusCircle, Trash2, Calculator, Loader2, AlertTriangle, Lightbulb, Upload, Library, BookMarked, ListChecks, DollarSign, Beaker, KeyRound } from 'lucide-react';
-
-// This constant checks if the API key was correctly injected at build time.
-const IS_API_KEY_SET = process.env.API_KEY && process.env.API_KEY.length > 0;
 
 const defaultIngredientValues: Omit<FeedIngredientFormValues, 'id' | 'name' | 'price'> = {
   protein: '', humedad: '', grasa: '', fiber: '', ceniza: '', almidon: '',
@@ -52,6 +49,19 @@ const FormulationPage: React.FC = () => {
   const [isNutritionalRequirementsLibraryOpen, setIsNutritionalRequirementsLibraryOpen] = useState(false);
   const [nutritionalRequirementsLibrary, setNutritionalRequirementsLibrary] = useState<NutritionalRequirementProfile[]>([]);
   const [isSelectRequirementsDialogOpen, setIsSelectRequirementsDialogOpen] = useState(false);
+  
+  // Safely check for API key inside the component render cycle to prevent crashing.
+  const isApiKeySet = useMemo(() => {
+    try {
+      // This will be replaced by the build tool (e.g., Vercel) if configured correctly.
+      // If not, it will throw an error in the browser because 'process' is not defined.
+      return !!(process.env.API_KEY && process.env.API_KEY.length > 0);
+    } catch (e) {
+      // We catch the ReferenceError here, preventing a crash.
+      // This means the app can render, and we know the key is not available.
+      return false;
+    }
+  }, []);
   
   const form = useForm<AgriBalanceFormValues>({
     resolver: zodResolver(AgriBalanceFormSchema),
@@ -238,7 +248,7 @@ const FormulationPage: React.FC = () => {
                   <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2 mb-2"><BookMarked className="text-cyan-600"/> 2. Ingredientes</h2>
                   <p className="text-sm text-gray-500 mb-4">Lista los ingredientes disponibles y su precio por unidad.</p>
                   <div className="flex flex-wrap gap-2 mb-4">
-                      <Button type="button" size="sm" onClick={handleSuggestIngredients} disabled={isLoadingSuggestions || !IS_API_KEY_SET}>
+                      <Button type="button" size="sm" onClick={handleSuggestIngredients} disabled={isLoadingSuggestions || !isApiKeySet}>
                         {isLoadingSuggestions ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Lightbulb className="h-4 w-4 mr-2" />}
                         Sugerir por IA
                       </Button>
@@ -327,7 +337,7 @@ const FormulationPage: React.FC = () => {
                   </div>
               )}
               
-              {!IS_API_KEY_SET && (
+              {!isApiKeySet && (
                  <div className="rounded-md bg-yellow-50 p-4">
                     <div className="flex">
                         <div className="flex-shrink-0"><KeyRound className="h-5 w-5 text-yellow-400" /></div>
@@ -342,7 +352,7 @@ const FormulationPage: React.FC = () => {
               )}
 
               <div className="flex justify-end pt-4">
-                  <Button type="submit" disabled={isLoading || !IS_API_KEY_SET} size="lg">
+                  <Button type="submit" disabled={isLoading || !isApiKeySet} size="lg">
                       {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Calculator className="mr-2 h-5 w-5" />}
                       Formular Dieta
                   </Button>

@@ -1,4 +1,4 @@
-import React, { ErrorInfo, ReactNode } from 'react';
+import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { AlertTriangle, RotateCw } from 'lucide-react';
 import { Button } from './ui/button';
 
@@ -11,9 +11,8 @@ interface State {
   error?: Error;
 }
 
-// FIX: Changed from `extends Component<Props, State>` to `extends React.Component<Props, State>`
-// to resolve a potential type resolution issue causing `this.props` to be unrecognized.
-class ErrorBoundary extends React.Component<Props, State> {
+// FIX: Changed from `React.Component` to a named import `Component` to resolve a potential type resolution issue.
+class ErrorBoundary extends Component<Props, State> {
   public state: State = {
     hasError: false,
   };
