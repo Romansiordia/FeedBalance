@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -146,7 +145,9 @@ const IngredientLibraryDialog: React.FC<IngredientLibraryDialogProps> = ({ isOpe
     if (isAdding) {
         if (editingIngredient) {
             const editFormValues: Partial<FeedIngredientFormValues> = {};
-            for (const key in editingIngredient) {
+            // FIX: Use Object.keys to ensure 'key' is a string and iterate over own properties,
+            // which resolves type errors when trying to use 'key' for object indexing.
+            for (const key of Object.keys(editingIngredient)) {
                 const value = editingIngredient[key as keyof StoredFeedIngredient];
                 if (value !== null && value !== undefined) {
                     (editFormValues as any)[key] = String(value);

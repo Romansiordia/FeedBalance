@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 
@@ -7,6 +6,8 @@ interface SelectContextProps {
   onValueChange: (value: string) => void;
   open: boolean;
   setOpen: (open: boolean) => void;
+  // FIX: Add children to the context to make them accessible in child components like SelectValue.
+  children: React.ReactNode;
 }
 
 const SelectContext = createContext<SelectContextProps | null>(null);
@@ -14,7 +15,8 @@ const SelectContext = createContext<SelectContextProps | null>(null);
 const Select: React.FC<{ value: string; onValueChange: (value: string) => void; children: React.ReactNode }> = ({ value, onValueChange, children }) => {
   const [open, setOpen] = useState(false);
   return (
-    <SelectContext.Provider value={{ value, onValueChange, open, setOpen }}>
+    // FIX: Pass children through the context provider's value.
+    <SelectContext.Provider value={{ value, onValueChange, open, setOpen, children }}>
       <div className="relative">{children}</div>
     </SelectContext.Provider>
   );
@@ -37,10 +39,12 @@ const SelectTrigger: React.FC<{ id?: string; className?: string; children: React
 
 const SelectValue: React.FC<{ placeholder?: string }> = ({ placeholder }) => {
     const context = useContext(SelectContext);
+    // FIX: Use React.isValidElement as a type guard to safely access props on child elements, preventing runtime errors.
     const selectedChild = React.Children.toArray(context?.children).find(
-      (child) => (child as React.ReactElement).props.value === context?.value
+      (child) => React.isValidElement(child) && child.props.value === context?.value
     );
-    return <span>{selectedChild ? (selectedChild as React.ReactElement).props.children : placeholder}</span>;
+    // FIX: Use React.isValidElement again to safely access the children prop for rendering.
+    return <span>{React.isValidElement(selectedChild) ? selectedChild.props.children : placeholder}</span>;
   };
 
 const SelectContent: React.FC<{ className?: string; children: React.ReactNode }> = ({ className, children }) => {
