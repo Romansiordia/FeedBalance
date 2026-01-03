@@ -1,0 +1,5 @@
+{
+  "name": "Balance-Feed",
+  "description": "An advanced web application for formulating cost-effective and nutritionally balanced animal diets. Leveraging AI, it helps create optimal feed for pigs, poultry, and pets based on specific animal profiles, available ingredients, and nutritional constraints.",
+  "requestFramePermissions": []
+}
