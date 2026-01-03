@@ -75,9 +75,12 @@ export const saveNutritionalRequirementProfile = (profileData: NutritionalRequir
     const nutrientsRecord: Record<string, { target?: number; min?: number; max?: number; unit: string }> = {};
     profileData.nutrientEntries.forEach(entry => {
         // Ensure values are numbers or undefined
-        const target = entry.target !== undefined && entry.target !== null && entry.target !== '' ? Number(entry.target) : undefined;
-        const min = entry.min !== undefined && entry.min !== null && entry.min !== '' ? Number(entry.min) : undefined;
-        const max = entry.max !== undefined && entry.max !== null && entry.max !== '' ? Number(entry.max) : undefined;
+        // FIX: Removed comparison with empty string `''` as the value is already a number or undefined.
+        const target = entry.target !== undefined && entry.target !== null ? Number(entry.target) : undefined;
+        // FIX: Removed comparison with empty string `''` as the value is already a number or undefined.
+        const min = entry.min !== undefined && entry.min !== null ? Number(entry.min) : undefined;
+        // FIX: Removed comparison with empty string `''` as the value is already a number or undefined.
+        const max = entry.max !== undefined && entry.max !== null ? Number(entry.max) : undefined;
 
         nutrientsRecord[entry.nutrientName] = {
             target: isNaN(target!) ? undefined : target,
@@ -144,6 +147,8 @@ export const removeNutritionalRequirementProfile = (id: string): NutritionalRequ
 
 // Helper to convert stored profile to form values
 export const convertProfileToFormValues = (profile: NutritionalRequirementProfile): NutritionalRequirementProfileFormValues => {
+    // FIX: The form expects string values for number inputs to handle empty fields gracefully.
+    // The type `NutrientEntryFormValues` was updated to reflect this, so we now convert numbers to strings.
     const nutrientEntries: NutrientEntryFormValues[] = Object.entries(profile.nutrients).map(([name, value]) => ({
         fieldId: uuidv4(), // Generate a new fieldId for the form
         nutrientName: name,

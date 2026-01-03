@@ -33,9 +33,12 @@ interface NutritionalRequirementsLibraryDialogProps {
 
 const defaultNutrientEntry: Omit<NutrientEntryFormValues, 'fieldId'> = {
   nutrientName: '',
-  target: '',
-  min: '',
-  max: '',
+  // FIX: Changed empty strings to `undefined` to match the expected type `number | undefined`.
+  target: undefined,
+  // FIX: Changed empty strings to `undefined` to match the expected type `number | undefined`.
+  min: undefined,
+  // FIX: Changed empty strings to `undefined` to match the expected type `number | undefined`.
+  max: undefined,
   unit: '%',
 };
 

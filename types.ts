@@ -11,8 +11,14 @@ export interface AnimalProfile {
 }
 
 const optionalCoercedNumber = z.preprocess(
-    (val) => (val === "" || val === null ? undefined : val),
-    z.coerce.number({ invalid_type_error: "Debe ser un número" }).optional()
+    // FIX: Replaced `z.coerce.number` with a manual coercion in `preprocess` followed by `z.number()`.
+    // This pattern is more compatible with older Zod versions where `z.coerce.number` might not support error messages.
+    (val) => {
+        if (val === "" || val === null || val === undefined) return undefined;
+        const num = Number(val);
+        return isNaN(num) ? val : num; // Pass invalid string to trigger error from z.number
+    },
+    z.number({ invalid_type_error: "Debe ser un número" }).optional()
 );
 
 // For form validation and data structure
@@ -74,7 +80,10 @@ export type StoredFeedIngredient = ValidatedFeedIngredient & { id: string };
 
 export const AgriBalanceFormSchema = z.object({
   animalProfile: z.object({
-    animalType: z.enum(AnimalTypes, { required_error: "Tipo de animal es requerido" }),
+    // FIX: Changed `required_error` to `invalid_type_error` to resolve the Zod error.
+    // While not semantically perfect for a "required" check, `invalid_type_error` is more broadly supported
+    // and will still trigger a validation error if the value is missing or incorrect.
+    animalType: z.enum(AnimalTypes, { invalid_type_error: "Tipo de animal es requerido" }),
     growthStage: z.string().min(1, "Etapa de crecimiento es requerida"),
     targetProductionLevel: z.string().min(1, "Nivel de producción objetivo es requerido"),
   }),
@@ -160,12 +169,18 @@ export const NutrientEntrySchema = z.object({
   max: optionalCoercedNumber,
   unit: z.string().min(1, "Unidad es requerida"),
 });
-export type NutrientEntryFormValues = z.infer<typeof NutrientEntrySchema>;
+// FIX: Redefined `NutrientEntryFormValues` to allow string values for number fields,
+// which is necessary for form inputs and consistent with `FeedIngredientFormValues`.
+type ValidatedNutrientEntry = z.infer<typeof NutrientEntrySchema>;
+export type NutrientEntryFormValues = {
+    [K in keyof ValidatedNutrientEntry]: ValidatedNutrientEntry[K] extends number | undefined ? string | number | undefined : ValidatedNutrientEntry[K]
+};
 
 export const NutritionalRequirementProfileFormSchema = z.object({
   id: z.string().optional(), // Present if editing
   profileDisplayName: z.string().min(1, "Nombre de perfil es requerido"),
-  animalType: z.enum(AnimalTypes, { required_error: "Tipo de animal es requerido" }),
+  // FIX: Changed `required_error` to `invalid_type_error` to resolve the Zod error.
+  animalType: z.enum(AnimalTypes, { invalid_type_error: "Tipo de animal es requerido" }),
   growthStageDescription: z.string().min(1, "Descripción de etapa es requerida"),
   notes: z.string().optional(),
   nutrientEntries: z.array(NutrientEntrySchema)
@@ -175,4 +190,9 @@ export const NutritionalRequirementProfileFormSchema = z.object({
       return new Set(names).size === names.length;
     }, { message: "Los nombres de los nutrientes deben ser únicos dentro de un perfil." }),
 });
-export type NutritionalRequirementProfileFormValues = z.infer<typeof NutritionalRequirementProfileFormSchema>;
+// FIX: Redefined `NutritionalRequirementProfileFormValues` to use the new `NutrientEntryFormValues`
+// to ensure type consistency for form state.
+type ValidatedNutritionalRequirementProfileFormValues = z.infer<typeof NutritionalRequirementProfileFormSchema>;
+export type NutritionalRequirementProfileFormValues = Omit<ValidatedNutritionalRequirementProfileFormValues, 'nutrientEntries'> & {
+  nutrientEntries: NutrientEntryFormValues[];
+};

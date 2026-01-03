@@ -5,10 +5,11 @@ import type { FormulateDietInput, FormulateDietOutput, SuggestIngredientsInput, 
 let aiInstance: GoogleGenAI | null = null;
 
 const getAiClient = (): GoogleGenAI => {
-    const API_KEY = process.env.API_KEY;
+    // FIX: Vercel requires environment variables to be prefixed with NEXT_PUBLIC_ to be exposed to the browser.
+    const API_KEY = process.env.NEXT_PUBLIC_API_KEY;
 
     if (!API_KEY) {
-        throw new Error("La API Key de Google AI no está configurada. Por favor, añádela como una variable de entorno en tu plataforma de despliegue (ej. Vercel) para que la IA pueda funcionar.");
+        throw new Error("La API Key de Google AI no está configurada. Por favor, añádela como una variable de entorno llamada NEXT_PUBLIC_API_KEY en la configuración de tu proyecto en Vercel.");
     }
 
     if (!aiInstance) {
@@ -180,7 +181,7 @@ export const formulateDiet = async (input: FormulateDietInput): Promise<Formulat
         if (error instanceof Error) {
             const lowerCaseError = error.message.toLowerCase();
             if (lowerCaseError.includes('api key not valid') || lowerCaseError.includes('permission denied') || lowerCaseError.includes('api_key')) {
-                detailedMessage = "La clave API de Google AI no es válida o no tiene los permisos necesarios. Verifica la clave en las variables de entorno de tu proyecto en Vercel.";
+                detailedMessage = "La clave API de Google AI no es válida o no tiene los permisos necesarios. Verifica la clave en la variable de entorno NEXT_PUBLIC_API_KEY de tu proyecto en Vercel.";
             } else if (lowerCaseError.includes('deadline exceeded')) {
                 detailedMessage = "La solicitud a la IA tardó demasiado en responder (timeout). Inténtalo de nuevo en unos momentos.";
             } else if (lowerCaseError.includes('400')) {
@@ -229,7 +230,7 @@ export const suggestIngredients = async (input: SuggestIngredientsInput): Promis
         if (error instanceof Error) {
              const lowerCaseError = error.message.toLowerCase();
             if (lowerCaseError.includes('api key not valid') || lowerCaseError.includes('permission denied') || lowerCaseError.includes('api_key')) {
-                detailedMessage = "La clave API de Google AI no es válida. Verifica la clave en las variables de entorno de tu proyecto en Vercel.";
+                detailedMessage = "La clave API de Google AI no es válida. Verifica la clave en la variable de entorno NEXT_PUBLIC_API_KEY de tu proyecto en Vercel.";
             }
         }
         throw new Error(detailedMessage);

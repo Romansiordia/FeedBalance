@@ -60,7 +60,8 @@ const nutrientFieldsDisplayOrder: Array<{ name: keyof Omit<FeedIngredientFormVal
   { name: 'valina', label: 'Valina Total', unit: '%', placeholder: 'Ej: 0.70' },
   { name: 'valinaDigestible', label: 'Valina Digestible', unit: '%', placeholder: 'Ej: 0.65' },
   { name: 'treonina', label: 'Treonina Total', unit: '%', placeholder: 'Ej: 0.65' },
-  { name: 'isoleusina', label: 'Isoleucina Total', unit: '%', placeholder: 'Ej: 0.60' },
+  // FIX: Corrected typo from 'isoleusina' to 'isoleucina' to match the type definition.
+  { name: 'isoleucina', label: 'Isoleucina Total', unit: '%', placeholder: 'Ej: 0.60' },
 ];
 
 const CSV_HEADERS = [
@@ -119,7 +120,7 @@ const formDefaultValues: FeedIngredientFormValues = {
     leusinaTotal: '', leusinaDigestible: '',
     valina: '', valinaDigestible: '',
     treonina: '', 
-    isoleusina: '', 
+    isoleucina: '', 
     otherNutrients: '',
 };
 

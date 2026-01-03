@@ -50,15 +50,14 @@ const FormulationPage: React.FC = () => {
   const [nutritionalRequirementsLibrary, setNutritionalRequirementsLibrary] = useState<NutritionalRequirementProfile[]>([]);
   const [isSelectRequirementsDialogOpen, setIsSelectRequirementsDialogOpen] = useState(false);
   
-  // Safely check for API key inside the component render cycle to prevent crashing.
   const isApiKeySet = useMemo(() => {
     try {
-      // This will be replaced by the build tool (e.g., Vercel) if configured correctly.
-      // If not, it will throw an error in the browser because 'process' is not defined.
-      return !!(process.env.API_KEY && process.env.API_KEY.length > 0);
+      // Vercel injects public env vars during the build process.
+      // We check for NEXT_PUBLIC_API_KEY.
+      return !!(process.env.NEXT_PUBLIC_API_KEY && process.env.NEXT_PUBLIC_API_KEY.length > 0);
     } catch (e) {
-      // We catch the ReferenceError here, preventing a crash.
-      // This means the app can render, and we know the key is not available.
+      // If process is not defined, it means we are in a non-Node.js-like env
+      // where env vars weren't injected, so the key is not set.
       return false;
     }
   }, []);
@@ -344,7 +343,7 @@ const FormulationPage: React.FC = () => {
                         <div className="ml-3">
                             <h3 className="text-sm font-medium text-yellow-800">Configuración Requerida</h3>
                             <div className="mt-2 text-sm text-yellow-700">
-                                <p>La API Key de Google AI no está configurada. Para que la IA funcione, añádela como una variable de entorno llamada <strong>API_KEY</strong> en la configuración de tu proyecto en Vercel y realiza un nuevo despliegue.</p>
+                                <p>La API Key de Google AI no está configurada. Para que la IA funcione, añádela como una variable de entorno llamada <strong>NEXT_PUBLIC_API_KEY</strong> en la configuración de tu proyecto en Vercel y realiza un nuevo despliegue.</p>
                             </div>
                         </div>
                     </div>
