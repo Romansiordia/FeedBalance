@@ -2,15 +2,19 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import type { FormulateDietInput, FormulateDietOutput, SuggestIngredientsInput, SuggestIngredientsOutput, ValidatedFeedIngredient } from '../types';
 
-const API_KEY = process.env.API_KEY;
+let aiInstance: GoogleGenAI | null = null;
 
-// Initialize AI, but check for key existence in each function.
-const ai = new GoogleGenAI({ apiKey: API_KEY || "" });
+const getAiClient = (): GoogleGenAI => {
+    const API_KEY = process.env.API_KEY;
 
-const checkApiKey = () => {
     if (!API_KEY) {
         throw new Error("La API Key de Google AI no está configurada. Por favor, añádela como una variable de entorno en tu plataforma de despliegue (ej. Vercel) para que la IA pueda funcionar.");
     }
+
+    if (!aiInstance) {
+        aiInstance = new GoogleGenAI({ apiKey: API_KEY });
+    }
+    return aiInstance;
 };
 
 const chemicalCompositionSchema = {
@@ -124,7 +128,7 @@ const generateIngredientJSON = (ingredients: ValidatedFeedIngredient[]): string 
 
 
 export const formulateDiet = async (input: FormulateDietInput): Promise<FormulateDietOutput> => {
-    checkApiKey(); // Fail fast if key is missing
+    const ai = getAiClient();
     const ingredientDetailsJSON = generateIngredientJSON(input.feedIngredients);
     
     const prompt = `
@@ -188,7 +192,7 @@ export const formulateDiet = async (input: FormulateDietInput): Promise<Formulat
 };
 
 export const suggestIngredients = async (input: SuggestIngredientsInput): Promise<SuggestIngredientsOutput> => {
-    checkApiKey(); // Fail fast if key is missing
+    const ai = getAiClient();
     const prompt = `
     Based on the following animal profile, suggest a list of 5 to 10 common and effective feed ingredients.
     - Animal Type: ${input.animalType}
