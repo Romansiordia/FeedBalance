@@ -159,7 +159,8 @@ export const NutritionalRequirementsLibraryDialog: React.FC<NutritionalRequireme
               <div>
                 <Label htmlFor="profileDisplayName">Nombre del Perfil</Label>
                 <Input id="profileDisplayName" {...form.register("profileDisplayName")} placeholder="Ej: Pollo Engorde - Finalizador" />
-                {form.formState.errors.profileDisplayName && <p className="text-sm text-red-600 mt-1">{form.formState.errors.profileDisplayName.message}</p>}
+                {/* FIX: Cast errors object to any to bypass incorrect type inference. */}
+                {form.formState.errors.profileDisplayName && <p className="text-sm text-red-600 mt-1">{(form.formState.errors.profileDisplayName as any).message}</p>}
               </div>
               <div>
                 <Label htmlFor="animalTypeReq">Tipo de Animal</Label>
@@ -181,13 +182,15 @@ export const NutritionalRequirementsLibraryDialog: React.FC<NutritionalRequireme
                     </Select>
                     )}
                 />
-                {form.formState.errors.animalType && <p className="text-sm text-red-600 mt-1">{form.formState.errors.animalType.message}</p>}
+                {/* FIX: Cast errors object to any to bypass incorrect type inference. */}
+                {form.formState.errors.animalType && <p className="text-sm text-red-600 mt-1">{(form.formState.errors.animalType as any).message}</p>}
               </div>
             </div>
             <div>
               <Label htmlFor="growthStageDescription">Descripción Etapa</Label>
               <Input id="growthStageDescription" {...form.register("growthStageDescription")} placeholder="Ej: 5-7 semanas" />
-              {form.formState.errors.growthStageDescription && <p className="text-sm text-red-600 mt-1">{form.formState.errors.growthStageDescription.message}</p>}
+              {/* FIX: Cast errors object to any to bypass incorrect type inference. */}
+              {form.formState.errors.growthStageDescription && <p className="text-sm text-red-600 mt-1">{(form.formState.errors.growthStageDescription as any).message}</p>}
             </div>
             <div>
               <Label htmlFor="notes">Notas Adicionales</Label>

@@ -17,8 +17,8 @@ const optionalCoercedNumber = z.preprocess(
         const num = Number(val);
         return isNaN(num) ? val : num; // Pass invalid string to trigger error from z.number
     },
-    // FIX: Changed `required_error` to `invalid_type_error` to resolve Zod schema error.
-    z.number({ invalid_type_error: "Debe ser un número" }).optional()
+    // FIX: Changed `required_error` to `message` to match the allowed properties in the Zod version being used. The error message indicates 'message' is a valid key, but 'required_error' is not.
+    z.number({ message: "Debe ser un número" }).optional()
 );
 
 // For form validation and data structure
@@ -80,9 +80,8 @@ export type StoredFeedIngredient = ValidatedFeedIngredient & { id: string };
 
 export const AgriBalanceFormSchema = z.object({
   animalProfile: z.object({
-    // FIX: Changed `required_error` to `invalid_type_error` to resolve the Zod error.
-    // `invalid_type_error` is supported in this context.
-    animalType: z.enum(AnimalTypes, { invalid_type_error: "Tipo de animal es requerido" }),
+    // FIX: Changed `required_error` to `message` to match the allowed properties in the Zod version being used.
+    animalType: z.enum(AnimalTypes, { message: "Tipo de animal es requerido" }),
     growthStage: z.string().min(1, "Etapa de crecimiento es requerida"),
     targetProductionLevel: z.string().min(1, "Nivel de producción objetivo es requerido"),
   }),
@@ -178,8 +177,8 @@ export type NutrientEntryFormValues = {
 export const NutritionalRequirementProfileFormSchema = z.object({
   id: z.string().optional(), // Present if editing
   profileDisplayName: z.string().min(1, "Nombre de perfil es requerido"),
-  // FIX: Changed `required_error` to `invalid_type_error` to resolve the Zod error.
-  animalType: z.enum(AnimalTypes, { invalid_type_error: "Tipo de animal es requerido" }),
+  // FIX: Changed `required_error` to `message` to match the allowed properties in the Zod version being used.
+  animalType: z.enum(AnimalTypes, { message: "Tipo de animal es requerido" }),
   growthStageDescription: z.string().min(1, "Descripción de etapa es requerida"),
   notes: z.string().optional(),
   nutrientEntries: z.array(NutrientEntrySchema)

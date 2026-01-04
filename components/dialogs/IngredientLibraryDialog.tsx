@@ -338,7 +338,8 @@ const IngredientLibraryDialog: React.FC<IngredientLibraryDialogProps> = ({ isOpe
                             <div>
                                 <Label htmlFor="name">Nombre del Ingrediente</Label>
                                 <Input id="name" {...form.register('name')} placeholder="Ej: Maíz Amarillo" />
-                                {form.formState.errors.name && <p className="text-sm text-red-600 mt-1">{form.formState.errors.name.message}</p>}
+                                {/* FIX: Cast errors object to any to bypass incorrect type inference. */}
+                                {form.formState.errors.name && <p className="text-sm text-red-600 mt-1">{(form.formState.errors.name as any).message}</p>}
                             </div>
                             <div>
                                 <Label htmlFor="price">Precio (por unidad)</Label>
@@ -346,7 +347,8 @@ const IngredientLibraryDialog: React.FC<IngredientLibraryDialogProps> = ({ isOpe
                                     <DollarSign className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                                     <Input id="price" type="number" step="any" {...form.register('price')} placeholder="Ej: 0.25" className="pl-7" />
                                 </div>
-                                {form.formState.errors.price && <p className="text-sm text-red-600 mt-1">{form.formState.errors.price.message}</p>}
+                                {/* FIX: Cast errors object to any to bypass incorrect type inference. */}
+                                {form.formState.errors.price && <p className="text-sm text-red-600 mt-1">{(form.formState.errors.price as any).message}</p>}
                             </div>
                         </div>
 
@@ -358,7 +360,8 @@ const IngredientLibraryDialog: React.FC<IngredientLibraryDialogProps> = ({ isOpe
                                         <Input id={field.name} type="number" step="any" {...form.register(field.name as NutrientFieldKey)} placeholder={field.placeholder}/>
                                         <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-400">{field.unit}</span>
                                     </div>
-                                    {form.formState.errors[field.name as NutrientFieldKey] && <p className="text-sm text-red-600 mt-1">{form.formState.errors[field.name as NutrientFieldKey]?.message}</p>}
+                                    {/* FIX: Cast errors object to any to bypass incorrect type inference. */}
+                                    {form.formState.errors[field.name as NutrientFieldKey] && <p className="text-sm text-red-600 mt-1">{(form.formState.errors[field.name as NutrientFieldKey] as any)?.message}</p>}
                                 </div>
                             ))}
                         </div>

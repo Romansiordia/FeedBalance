@@ -231,17 +231,20 @@ const FormulationPage: React.FC = () => {
                         </select>
                       )}
                       />
-                      {form.formState.errors.animalProfile?.animalType && <p className="text-sm text-red-600 mt-1">{form.formState.errors.animalProfile.animalType.message}</p>}
+                      {/* FIX: Cast errors object to any to bypass incorrect type inference for nested objects. */}
+                      {(form.formState.errors.animalProfile as any)?.animalType && <p className="text-sm text-red-600 mt-1">{(form.formState.errors.animalProfile as any).animalType.message}</p>}
                     </div>
                     <div>
                       <label htmlFor="growthStage" className="block text-sm font-medium text-gray-700 mb-1">Etapa de Crecimiento</label>
                       <input id="growthStage" {...form.register("animalProfile.growthStage")} placeholder="Ej: Iniciador, Engorde" className="mt-1 focus:ring-cyan-500 focus:border-cyan-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
-                      {form.formState.errors.animalProfile?.growthStage && <p className="text-sm text-red-600 mt-1">{form.formState.errors.animalProfile.growthStage.message}</p>}
+                      {/* FIX: Cast errors object to any to bypass incorrect type inference for nested objects. */}
+                      {(form.formState.errors.animalProfile as any)?.growthStage && <p className="text-sm text-red-600 mt-1">{(form.formState.errors.animalProfile as any).growthStage.message}</p>}
                     </div>
                     <div>
                       <label htmlFor="targetProductionLevel" className="block text-sm font-medium text-gray-700 mb-1">Nivel de Producción</label>
                       <input id="targetProductionLevel" {...form.register("animalProfile.targetProductionLevel")} placeholder="Ej: Alta producción" className="mt-1 focus:ring-cyan-500 focus:border-cyan-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
-                      {form.formState.errors.animalProfile?.targetProductionLevel && <p className="text-sm text-red-600 mt-1">{form.formState.errors.animalProfile.targetProductionLevel.message}</p>}
+                      {/* FIX: Cast errors object to any to bypass incorrect type inference for nested objects. */}
+                      {(form.formState.errors.animalProfile as any)?.targetProductionLevel && <p className="text-sm text-red-600 mt-1">{(form.formState.errors.animalProfile as any).targetProductionLevel.message}</p>}
                     </div>
                   </div>
                   <div className="mt-4">
@@ -306,7 +309,8 @@ const FormulationPage: React.FC = () => {
                               <div>
                                   <label htmlFor={`feedIngredients.${index}.name`} className="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
                                   <input {...form.register(`feedIngredients.${index}.name`)} placeholder="Ej: Maíz" className="mt-1 focus:ring-cyan-500 focus:border-cyan-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
-                                  {form.formState.errors.feedIngredients?.[index]?.name && <p className="text-sm text-red-600 mt-1">{form.formState.errors.feedIngredients[index]?.name?.message}</p>}
+                                  {/* FIX: Cast error object to any to bypass incorrect type inference. */}
+                                  {form.formState.errors.feedIngredients?.[index]?.name && <p className="text-sm text-red-600 mt-1">{((form.formState.errors.feedIngredients as any)[index]?.name as any)?.message}</p>}
                               </div>
                               <div>
                                   <label htmlFor={`feedIngredients.${index}.price`} className="block text-sm font-medium text-gray-700 mb-1">Precio</label>
@@ -314,7 +318,7 @@ const FormulationPage: React.FC = () => {
                                       <DollarSign className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                                       <input type="number" step="any" {...form.register(`feedIngredients.${index}.price`)} placeholder="0.25" className="pl-7 mt-1 focus:ring-cyan-500 focus:border-cyan-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
                                   </div>
-                                  {form.formState.errors.feedIngredients?.[index]?.price && <p className="text-sm text-red-600 mt-1">{form.formState.errors.feedIngredients[index]?.price?.message}</p>}
+                                  {form.formState.errors.feedIngredients?.[index]?.price && <p className="text-sm text-red-600 mt-1">{(form.formState.errors.feedIngredients as any)[index]?.price?.message}</p>}
                               </div>
                           </div>
                       </div>
