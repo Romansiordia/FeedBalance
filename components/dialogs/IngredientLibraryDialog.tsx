@@ -60,8 +60,8 @@ const nutrientFieldsDisplayOrder: Array<{ name: keyof Omit<FeedIngredientFormVal
   { name: 'valina', label: 'Valina Total', unit: '%', placeholder: 'Ej: 0.70' },
   { name: 'valinaDigestible', label: 'Valina Digestible', unit: '%', placeholder: 'Ej: 0.65' },
   { name: 'treonina', label: 'Treonina Total', unit: '%', placeholder: 'Ej: 0.65' },
-  // FIX: Corrected typo from 'isoleusina' to 'isoleucina' to match the type definition.
-  { name: 'isoleucina', label: 'Isoleucina Total', unit: '%', placeholder: 'Ej: 0.60' },
+  // FIX: Corrected typo from 'isoleucina' to 'isoleusina' to match the type definition.
+  { name: 'isoleusina', label: 'Isoleucina Total', unit: '%', placeholder: 'Ej: 0.60' },
 ];
 
 const CSV_HEADERS = [
@@ -100,7 +100,8 @@ const CSV_FIELD_MAPPING: (keyof StoredFeedIngredient | 'id')[] = [
     'leusinaTotal', 'leusinaDigestible',
     'valina', 'valinaDigestible',
     'treonina', 
-    'isoleucina',
+    // FIX: Corrected typo from 'isoleucina' to 'isoleusina' to match the type definition.
+    'isoleusina',
     'otherNutrients',
 ];
 
@@ -120,7 +121,8 @@ const formDefaultValues: FeedIngredientFormValues = {
     leusinaTotal: '', leusinaDigestible: '',
     valina: '', valinaDigestible: '',
     treonina: '', 
-    isoleucina: '', 
+    // FIX: Corrected typo from 'isoleucina' to 'isoleusina' to match the type definition.
+    isoleusina: '', 
     otherNutrients: '',
 };
 
@@ -133,9 +135,12 @@ const IngredientLibraryDialog: React.FC<IngredientLibraryDialogProps> = ({ isOpe
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
-  const form = useForm<FeedIngredientFormValues>({
+  // FIX: Removed explicit generic from useForm to let types be inferred from defaultValues.
+  // This resolves type conflicts between form state and the Zod schema resolver.
+  const form = useForm({
     resolver: zodResolver(FeedIngredientSchema),
-    defaultValues: formDefaultValues,
+    // FIX: Cast defaultValues to `any` to resolve type mismatch between form state (strings for numbers) and schema type.
+    defaultValues: formDefaultValues as any,
   });
 
   useEffect(() => {
@@ -173,8 +178,10 @@ const IngredientLibraryDialog: React.FC<IngredientLibraryDialogProps> = ({ isOpe
     setIsAdding(true);
   };
   
-  const handleFormSubmit = (data: FeedIngredientFormValues) => {
-    const validatedData = FeedIngredientSchema.parse(data) as ValidatedFeedIngredient;
+  // FIX: Changed 'data' parameter type to ValidatedFeedIngredient.
+  // The zodResolver provides validated and coerced data to the submit handler.
+  const handleFormSubmit = (data: ValidatedFeedIngredient) => {
+    const validatedData = data;
     const updatedLibrary = saveIngredientToLibrary(validatedData);
     setLibrary(updatedLibrary);
     onLibraryUpdate(updatedLibrary);

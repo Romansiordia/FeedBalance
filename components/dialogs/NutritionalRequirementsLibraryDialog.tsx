@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -42,22 +41,26 @@ const defaultNutrientEntry: Omit<NutrientEntryFormValues, 'fieldId'> = {
   unit: '%',
 };
 
-const NutritionalRequirementsLibraryDialog: React.FC<NutritionalRequirementsLibraryDialogProps> = ({ isOpen, onOpenChange }) => {
+// FIX: Changed to a named export to resolve module loading errors.
+export const NutritionalRequirementsLibraryDialog: React.FC<NutritionalRequirementsLibraryDialogProps> = ({ isOpen, onOpenChange }) => {
   const [library, setLibrary] = useState<NutritionalRequirementProfile[]>([]);
   const [selectedProfileForView, setSelectedProfileForView] = useState<NutritionalRequirementProfile | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingProfile, setEditingProfile] = useState<NutritionalRequirementProfile | null>(null);
   const { toast } = useToast();
 
-  const form = useForm<NutritionalRequirementProfileFormValues>({
+  // FIX: Removed explicit generic from useForm to let types be inferred from defaultValues.
+  // This resolves type conflicts between form state and the Zod schema resolver.
+  const form = useForm({
     resolver: zodResolver(NutritionalRequirementProfileFormSchema),
+    // FIX: Cast defaultValues to `any` to resolve type mismatch between form state and schema type.
     defaultValues: {
       profileDisplayName: '',
       animalType: '' as AnimalType,
       growthStageDescription: '',
       notes: '',
       nutrientEntries: [{ ...defaultNutrientEntry, fieldId: uuidv4() }],
-    },
+    } as any,
   });
 
   const { fields, append, remove } = useFieldArray({
@@ -304,20 +307,13 @@ const NutritionalRequirementsLibraryDialog: React.FC<NutritionalRequirementsLibr
                 </Card>
               ) : (
                  <div className="flex items-center justify-center h-full text-gray-500 border rounded-md">
-                    <p>Selecciona un perfil para ver sus detalles.</p>
+                    Selecciona un perfil para ver sus detalles o crea uno nuevo.
                 </div>
               )}
             </div>
-            <DialogFooter className="mt-auto pt-4 border-t -mx-6 px-6 pb-0">
-                <DialogClose asChild>
-                    <Button variant="outline">Cerrar</Button>
-                </DialogClose>
-            </DialogFooter>
           </div>
         )}
-        </DialogContent>
+      </DialogContent>
     </Dialog>
   );
 };
-
-export default NutritionalRequirementsLibraryDialog;

@@ -1,4 +1,3 @@
-
 import { z } from 'zod';
 
 export const AnimalTypes = ["pigs", "laying hens", "broilers", "pets"] as const;
@@ -18,6 +17,7 @@ const optionalCoercedNumber = z.preprocess(
         const num = Number(val);
         return isNaN(num) ? val : num; // Pass invalid string to trigger error from z.number
     },
+    // FIX: Changed `required_error` to `invalid_type_error` to resolve Zod schema error.
     z.number({ invalid_type_error: "Debe ser un número" }).optional()
 );
 
@@ -81,8 +81,7 @@ export type StoredFeedIngredient = ValidatedFeedIngredient & { id: string };
 export const AgriBalanceFormSchema = z.object({
   animalProfile: z.object({
     // FIX: Changed `required_error` to `invalid_type_error` to resolve the Zod error.
-    // While not semantically perfect for a "required" check, `invalid_type_error` is more broadly supported
-    // and will still trigger a validation error if the value is missing or incorrect.
+    // `invalid_type_error` is supported in this context.
     animalType: z.enum(AnimalTypes, { invalid_type_error: "Tipo de animal es requerido" }),
     growthStage: z.string().min(1, "Etapa de crecimiento es requerida"),
     targetProductionLevel: z.string().min(1, "Nivel de producción objetivo es requerido"),

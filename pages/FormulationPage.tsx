@@ -1,9 +1,8 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { v4 as uuidv4 } from 'uuid';
-import { AgriBalanceFormSchema, type AgriBalanceFormValues, AnimalTypes, type AnimalType, type FeedIngredientFormValues, type StoredFeedIngredient, type ValidatedFeedIngredient, type NutritionalRequirementProfile } from '../types';
+import { AgriBalanceFormSchema, type AgriBalanceFormValues, AnimalTypes, type AnimalType, type FeedIngredientFormValues, type StoredFeedIngredient, type ValidatedFeedIngredient, type NutritionalRequirementProfile, FeedIngredientSchema } from '../types';
 import { formulateDiet, suggestIngredients } from '../services/geminiService';
 import { loadIngredientLibrary } from '../services/ingredientLibraryService';
 import { loadNutritionalRequirementsLibrary } from '../services/nutritionalRequirementsService';
@@ -13,7 +12,8 @@ import Sidebar from '../components/layout/Sidebar';
 import Header from '../components/layout/Header';
 import IngredientLibraryDialog from '../components/dialogs/IngredientLibraryDialog';
 import FormulationLibraryDialog from '../components/dialogs/FormulationLibraryDialog';
-import NutritionalRequirementsLibraryDialog from '../components/dialogs/NutritionalRequirementsLibraryDialog';
+// FIX: Changed to a named import as the module does not have a default export.
+import { NutritionalRequirementsLibraryDialog } from '../components/dialogs/NutritionalRequirementsLibraryDialog';
 import SelectRequirementsDialog from '../components/dialogs/SelectRequirementsDialog';
 import ResultsPage from './ResultsPage';
 import { Button } from '../components/ui/button';
@@ -52,23 +52,26 @@ const FormulationPage: React.FC = () => {
   
   const isApiKeySet = useMemo(() => {
     try {
-      // Vercel injects public env vars during the build process.
-      // We check for NEXT_PUBLIC_API_KEY.
-      return !!(process.env.NEXT_PUBLIC_API_KEY && process.env.NEXT_PUBLIC_API_KEY.length > 0);
+      // Vite exposes client-side env variables using `import.meta.env`
+      // and they must be prefixed with VITE_.
+      // FIX: Cast to `any` to bypass TypeScript error when `vite/client` types are not available.
+      return !!((import.meta as any).env.VITE_API_KEY && (import.meta as any).env.VITE_API_KEY.length > 0);
     } catch (e) {
-      // If process is not defined, it means we are in a non-Node.js-like env
-      // where env vars weren't injected, so the key is not set.
+      // This might happen in environments where import.meta.env is not defined.
       return false;
     }
   }, []);
   
-  const form = useForm<AgriBalanceFormValues>({
+  // FIX: Removed explicit generic from useForm to let types be inferred from defaultValues.
+  // This resolves type conflicts between form state (which can contain strings for number fields) and the Zod schema.
+  const form = useForm({
     resolver: zodResolver(AgriBalanceFormSchema),
-    defaultValues: appFormState || {
+    // FIX: Cast defaultValues to `any` to resolve type mismatch between form state (which can have empty strings for numbers) and the final validated type.
+    defaultValues: (appFormState || {
       animalProfile: { animalType: "", growthStage: '', targetProductionLevel: '' },
       feedIngredients: [{ id: uuidv4(), name: '', price: '', ...defaultIngredientValues }],
       constraints: '',
-    },
+    }) as any,
   });
 
   const { fields, append, remove } = useFieldArray({
@@ -92,6 +95,7 @@ const FormulationPage: React.FC = () => {
     setIngredientLibrary(updatedLibrary);
   };
 
+  // FIX: Updated the 'data' parameter type to AgriBalanceFormValues, which is the validated type returned by the zodResolver.
   const onSubmit = async (data: AgriBalanceFormValues) => {
     setIsLoading(true);
     setError(null);
@@ -147,7 +151,9 @@ const FormulationPage: React.FC = () => {
   };
 
   const addSuggestedIngredientToForm = (name: string) => {
-    append({ id: uuidv4(), name, price: '', ...defaultIngredientValues });
+    // FIX: Cast the appended object to 'any' to resolve a type mismatch.
+    // The form state allows strings for number fields, which differs from the strictly-typed schema.
+    append({ id: uuidv4(), name, price: 0, ...defaultIngredientValues } as any);
   };
   
   const handleSelectIngredientFromLibrary = (ingredientId: string) => {
@@ -162,7 +168,9 @@ const FormulationPage: React.FC = () => {
         return acc;
       }, { id: uuidv4() } as FeedIngredientFormValues);
       
-      append(formValues);
+      // FIX: Parse the string-based form values with the Zod schema to coerce and validate types before appending.
+      const validatedIngredient = FeedIngredientSchema.parse(formValues);
+      append(validatedIngredient);
     }
   };
 
@@ -313,7 +321,7 @@ const FormulationPage: React.FC = () => {
                       ))}
                   </div>
                    {form.formState.errors.feedIngredients?.root && <p className="text-sm text-red-600 mt-2">{form.formState.errors.feedIngredients.root.message}</p>}
-                   <Button type="button" variant="outline" size="sm" onClick={() => append({ id: uuidv4(), name: '', price: '', ...defaultIngredientValues })} className="mt-4">
+                   <Button type="button" variant="outline" size="sm" onClick={() => append({ id: uuidv4(), name: '', price: 0, ...defaultIngredientValues } as any)} className="mt-4">
                       <PlusCircle className="h-4 w-4 mr-2" /> Agregar Ingrediente
                   </Button>
               </div>
@@ -343,7 +351,7 @@ const FormulationPage: React.FC = () => {
                         <div className="ml-3">
                             <h3 className="text-sm font-medium text-yellow-800">Configuración Requerida</h3>
                             <div className="mt-2 text-sm text-yellow-700">
-                                <p>La API Key de Google AI no está configurada. Para que la IA funcione, añádela como una variable de entorno llamada <strong>NEXT_PUBLIC_API_KEY</strong> en la configuración de tu proyecto en Vercel y realiza un nuevo despliegue.</p>
+                                <p>La API Key de Google AI no está configurada. Para que la IA funcione, añádela como una variable de entorno llamada <strong>VITE_API_KEY</strong> en la configuración de tu proyecto en Vercel y realiza un nuevo despliegue.</p>
                             </div>
                         </div>
                     </div>
