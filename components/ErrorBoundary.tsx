@@ -1,4 +1,4 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react';
+import React, { ErrorInfo, ReactNode } from 'react';
 import { AlertTriangle, RotateCw } from 'lucide-react';
 import { Button } from './ui/button';
 
@@ -11,8 +11,10 @@ interface State {
   error?: Error;
 }
 
-// FIX: Changed from `React.Component` to a named import `Component` to resolve a potential type resolution issue.
-class ErrorBoundary extends Component<Props, State> {
+// FIX: Changed to extend `React.Component` directly and updated the import.
+// This resolves an unusual TypeScript error where `this.props` was not being recognized,
+// likely due to a module resolution peculiarity in the project's setup.
+class ErrorBoundary extends React.Component<Props, State> {
   public state: State = {
     hasError: false,
   };

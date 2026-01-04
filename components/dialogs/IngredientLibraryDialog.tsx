@@ -11,6 +11,7 @@ import { PlusCircle, Trash2, Edit3, BookOpen, Download, UploadCloud, Loader2, Do
 import { useToast } from "../../hooks/use-toast";
 import { FeedIngredientSchema, type StoredFeedIngredient, type FeedIngredientFormValues, type ValidatedFeedIngredient } from '../../types';
 import { saveIngredientToLibrary, removeIngredientFromLibrary, importIngredientsToLibrary } from '../../services/ingredientLibraryService';
+import CollapsibleSection from '../CollapsibleSection';
 
 interface IngredientLibraryDialogProps {
   isOpen: boolean;
@@ -60,9 +61,15 @@ const nutrientFieldsDisplayOrder: Array<{ name: keyof Omit<FeedIngredientFormVal
   { name: 'valina', label: 'Valina Total', unit: '%', placeholder: 'Ej: 0.70' },
   { name: 'valinaDigestible', label: 'Valina Digestible', unit: '%', placeholder: 'Ej: 0.65' },
   { name: 'treonina', label: 'Treonina Total', unit: '%', placeholder: 'Ej: 0.65' },
-  // FIX: Corrected typo from 'isoleucina' to 'isoleusina' to match the type definition.
   { name: 'isoleusina', label: 'Isoleucina Total', unit: '%', placeholder: 'Ej: 0.60' },
 ];
+
+const nutrientCategories = {
+  'Análisis Proximal': ['protein', 'humedad', 'grasa', 'fiber', 'ceniza', 'almidon', 'fdn', 'fda'],
+  'Energía': ['energy', 'energiaAves', 'energiaCerdos', 'lactosa'],
+  'Minerales': ['calcio', 'fosforo', 'fosforoFitico', 'zinc', 'cobre', 'hierro', 'manganeso', 'cloro', 'sodio', 'azufre', 'potasio', 'magnesio'],
+  'Aminoácidos': ['lisina', 'lisinaDigestible', 'metionina', 'metioninaDigestible', 'metCisTotal', 'metCisDigestible', 'triptofano', 'argininaTotal', 'argininaDigestible', 'leusinaTotal', 'leusinaDigestible', 'valina', 'valinaDigestible', 'treonina', 'isoleusina'],
+};
 
 const CSV_HEADERS = [
     'ID','Nombre', 'Precio',
@@ -100,7 +107,6 @@ const CSV_FIELD_MAPPING: (keyof StoredFeedIngredient | 'id')[] = [
     'leusinaTotal', 'leusinaDigestible',
     'valina', 'valinaDigestible',
     'treonina', 
-    // FIX: Corrected typo from 'isoleucina' to 'isoleusina' to match the type definition.
     'isoleusina',
     'otherNutrients',
 ];
@@ -121,7 +127,6 @@ const formDefaultValues: FeedIngredientFormValues = {
     leusinaTotal: '', leusinaDigestible: '',
     valina: '', valinaDigestible: '',
     treonina: '', 
-    // FIX: Corrected typo from 'isoleucina' to 'isoleusina' to match the type definition.
     isoleusina: '', 
     otherNutrients: '',
 };
@@ -135,11 +140,8 @@ const IngredientLibraryDialog: React.FC<IngredientLibraryDialogProps> = ({ isOpe
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
-  // FIX: Removed explicit generic from useForm to let types be inferred from defaultValues.
-  // This resolves type conflicts between form state and the Zod schema resolver.
   const form = useForm({
     resolver: zodResolver(FeedIngredientSchema),
-    // FIX: Cast defaultValues to `any` to resolve type mismatch between form state (strings for numbers) and schema type.
     defaultValues: formDefaultValues as any,
   });
 
@@ -151,8 +153,6 @@ const IngredientLibraryDialog: React.FC<IngredientLibraryDialogProps> = ({ isOpe
     if (isAdding) {
         if (editingIngredient) {
             const editFormValues: Partial<FeedIngredientFormValues> = {};
-            // FIX: Use Object.keys to ensure 'key' is a string and iterate over own properties,
-            // which resolves type errors when trying to use 'key' for object indexing.
             for (const key of Object.keys(editingIngredient)) {
                 const value = editingIngredient[key as keyof StoredFeedIngredient];
                 if (value !== null && value !== undefined) {
@@ -178,8 +178,6 @@ const IngredientLibraryDialog: React.FC<IngredientLibraryDialogProps> = ({ isOpe
     setIsAdding(true);
   };
   
-  // FIX: Changed 'data' parameter type to ValidatedFeedIngredient.
-  // The zodResolver provides validated and coerced data to the submit handler.
   const handleFormSubmit = (data: ValidatedFeedIngredient) => {
     const validatedData = data;
     const updatedLibrary = saveIngredientToLibrary(validatedData);
@@ -222,7 +220,9 @@ const IngredientLibraryDialog: React.FC<IngredientLibraryDialogProps> = ({ isOpe
     library.forEach(ing => {
       const row = CSV_FIELD_MAPPING.map(key => {
         const value = ing[key as keyof StoredFeedIngredient];
-        if (String(key) === 'name' || String(key) === 'id' || String(key) === 'otherNutrients') {
+        // FIX: The `key` variable is already a string. Using it directly in the comparison
+        // is cleaner and avoids a potential TypeScript type inference issue with `String(key)`.
+        if (key === 'name' || key === 'id' || key === 'otherNutrients') {
             const stringValue = String(value || '');
             return `"${stringValue.replace(/"/g, '""')}"`;
         }
@@ -332,13 +332,12 @@ const IngredientLibraryDialog: React.FC<IngredientLibraryDialogProps> = ({ isOpe
                 <div className="px-6 pt-4 flex-shrink-0">
                     <h3 className="text-lg font-semibold">{editingIngredient ? 'Editar Ingrediente' : 'Agregar Nuevo Ingrediente'}</h3>
                 </div>
-                <div className="flex-grow overflow-y-auto px-6 pt-4">
+                <div className="flex-grow overflow-y-auto px-6 pt-4 bg-gray-50/60">
                     <div className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white p-4 border rounded-md">
                             <div>
                                 <Label htmlFor="name">Nombre del Ingrediente</Label>
                                 <Input id="name" {...form.register('name')} placeholder="Ej: Maíz Amarillo" />
-                                {/* FIX: Cast errors object to any to bypass incorrect type inference. */}
                                 {form.formState.errors.name && <p className="text-sm text-red-600 mt-1">{(form.formState.errors.name as any).message}</p>}
                             </div>
                             <div>
@@ -347,31 +346,37 @@ const IngredientLibraryDialog: React.FC<IngredientLibraryDialogProps> = ({ isOpe
                                     <DollarSign className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                                     <Input id="price" type="number" step="any" {...form.register('price')} placeholder="Ej: 0.25" className="pl-7" />
                                 </div>
-                                {/* FIX: Cast errors object to any to bypass incorrect type inference. */}
                                 {form.formState.errors.price && <p className="text-sm text-red-600 mt-1">{(form.formState.errors.price as any).message}</p>}
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                            {nutrientFieldsDisplayOrder.map(field => (
-                                <div key={field.name}>
+                        {Object.entries(nutrientCategories).map(([categoryTitle, nutrientKeys], index) => {
+                          const fieldsInCategory = nutrientFieldsDisplayOrder.filter(field => (nutrientKeys as string[]).includes(field.name));
+                          return (
+                            <CollapsibleSection key={categoryTitle} title={categoryTitle} defaultOpen={index === 0}>
+                              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                                {fieldsInCategory.map(field => (
+                                  <div key={field.name}>
                                     <Label htmlFor={field.name}>{field.label}</Label>
                                     <div className="relative">
-                                        <Input id={field.name} type="number" step="any" {...form.register(field.name as NutrientFieldKey)} placeholder={field.placeholder}/>
-                                        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-400">{field.unit}</span>
+                                      <Input id={field.name} type="number" step="any" {...form.register(field.name as NutrientFieldKey)} placeholder={field.placeholder}/>
+                                      <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-400">{field.unit}</span>
                                     </div>
-                                    {/* FIX: Cast errors object to any to bypass incorrect type inference. */}
                                     {form.formState.errors[field.name as NutrientFieldKey] && <p className="text-sm text-red-600 mt-1">{(form.formState.errors[field.name as NutrientFieldKey] as any)?.message}</p>}
-                                </div>
-                            ))}
-                        </div>
-                        <div>
+                                  </div>
+                                ))}
+                              </div>
+                            </CollapsibleSection>
+                          );
+                        })}
+
+                        <div className="bg-white p-4 border rounded-md">
                             <Label htmlFor="otherNutrients">Otros Nutrientes (Notas)</Label>
                             <Textarea id="otherNutrients" {...form.register('otherNutrients')} placeholder="Información adicional..." />
                         </div>
                     </div>
                 </div>
-                 <DialogFooter className="pt-4 px-6 pb-6 mt-auto border-t flex-shrink-0">
+                 <DialogFooter className="pt-4 px-6 pb-6 mt-auto border-t flex-shrink-0 bg-white">
                     <Button type="button" variant="ghost" onClick={handleCancelForm}>Cancelar</Button>
                     <Button type="submit">{editingIngredient ? 'Actualizar' : 'Guardar'}</Button>
                 </DialogFooter>
